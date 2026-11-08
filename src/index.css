@@ -78,6 +78,12 @@
   --font-label-lg: 'Plus Jakarta Sans', sans-serif;
 }
 
+/* Ocultar el botón nativo de revelado de contraseña de Edge/Chromium para evitar duplicar el icono */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;

@@ -141,8 +141,8 @@ export const MOCK_PETS: Pet[] = [
 
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: 'usr_demo_123',
-  fullName: 'Carlos Gómez',
-  email: 'carlos.gomez@ejemplo.com',
+  fullName: '',
+  email: '',
   housingType: 'apartment_large',
   hasChildren: false,
   timeAvailable: '2_to_4h',

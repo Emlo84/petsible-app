@@ -8,10 +8,9 @@ import { Navbar } from './components/layout/Navbar'
 import { HeroSection } from './components/home/HeroSection'
 import { PetCatalog } from './components/catalog/PetCatalog'
 import { AuthSection } from './components/auth/AuthSection'
-import { BenefitsSection } from './components/home/BenefitsSection'
-import { TestimonialsSection } from './components/home/TestimonialsSection'
 import { Footer } from './components/layout/Footer'
 import { ScheduleModal } from './components/appointments/ScheduleModal'
+import { SheltersModal } from './components/shelters/SheltersModal'
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -19,6 +18,7 @@ export default function App() {
   const [selectedLocality, setSelectedLocality] = useState<string>('todas')
   const [selectedPetForAppointment, setSelectedPetForAppointment] = useState<Pet | null>(null)
   const [showProfileDrawer, setShowProfileDrawer] = useState<boolean>(false)
+  const [showSheltersModal, setShowSheltersModal] = useState<boolean>(false)
   const [authSectionTab, setAuthSectionTab] = useState<'register' | 'login'>('register')
 
   // Escuchar estado de sesión de Supabase
@@ -27,14 +27,39 @@ export default function App() {
       setCurrentUser(user)
     })
 
-    const { data: authListener } = AuthService.onAuthStateChange((session: Session | null) => {
-      setCurrentUser(session?.user || null)
+    const { data: authListener } = AuthService.onAuthStateChange((_session: Session | null) => {
+      AuthService.getCurrentUser().then((user) => {
+        setCurrentUser(user)
+      })
     })
 
     return () => {
       authListener.subscription.unsubscribe()
     }
   }, [])
+
+  // Sincronizar el perfil con el usuario registrado/autenticado
+  useEffect(() => {
+    if (currentUser) {
+      const name =
+        currentUser.user_metadata?.full_name ||
+        currentUser.user_metadata?.name ||
+        currentUser.email?.split('@')[0] ||
+        ''
+      setProfile((prev) => ({
+        ...prev,
+        id: currentUser.id,
+        email: currentUser.email || '',
+        fullName: name,
+      }))
+    } else {
+      setProfile((prev) => ({
+        ...prev,
+        fullName: '',
+        email: '',
+      }))
+    }
+  }, [currentUser])
 
   const handleOpenAuth = (tab: 'register' | 'login') => {
     setAuthSectionTab(tab)
@@ -45,6 +70,11 @@ export default function App() {
   const handleLogout = async () => {
     await AuthService.logout()
     setCurrentUser(null)
+    setProfile((prev) => ({
+      ...prev,
+      fullName: '',
+      email: '',
+    }))
   }
 
   return (
@@ -56,6 +86,7 @@ export default function App() {
         onLogout={handleLogout}
         selectedLocality={selectedLocality}
         onLocalityChange={setSelectedLocality}
+        onOpenShelters={() => setShowSheltersModal(true)}
       />
 
       <main className="w-full flex-1">
@@ -94,7 +125,7 @@ export default function App() {
                   Variables del Perfil Evaluadas por el Algoritmo de Afinidad
                 </h3>
                 <span className="text-xs text-secondary font-semibold">
-                  Se reevalúan los 4 refugios en milisegundos
+                  Se reevalúan los refugios en milisegundos
                 </span>
               </div>
 
@@ -189,21 +220,17 @@ export default function App() {
           selectedLocality={selectedLocality}
         />
 
-        {/* 5. Sección de Autenticación Unificada (Registro +18, Habeas Data, Login) */}
+        {/* 5. Sección de Autenticación Unificada (Registro +18, Habeas Data, Login, Logout) */}
         <AuthSection
           initialTab={authSectionTab}
+          currentUser={currentUser}
+          onLogout={handleLogout}
           onAuthSuccess={(user) => {
             setCurrentUser(user)
           }}
         />
 
-        {/* 6. Beneficios Diferenciales Pet-sible Bogotá */}
-        <BenefitsSection />
-
-        {/* 7. Historias y Testimonios de Adoptantes Reales */}
-        <TestimonialsSection />
-
-        {/* 8. Banner CTA Final */}
+        {/* 6. Banner CTA Final */}
         <section className="py-space-xl px-margin md:px-margin-tablet lg:px-margin-desktop bg-surface-container">
           <div className="max-w-5xl mx-auto rounded-3xl bg-secondary text-on-secondary p-space-lg sm:p-space-xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-space-lg">
             <div className="space-y-space-xs text-center md:text-left">
@@ -227,7 +254,7 @@ export default function App() {
         </section>
       </main>
 
-      {/* 9. Modal de Agendamiento Sin Solapamiento */}
+      {/* 7. Modal de Agendamiento Sin Solapamiento */}
       {selectedPetForAppointment && (
         <ScheduleModal
           pet={selectedPetForAppointment}
@@ -237,7 +264,13 @@ export default function App() {
         />
       )}
 
-      {/* 10. Footer con Líneas Distritales IDPYBA y Legal */}
+      {/* 8. Modal de Red de Refugios Aliados */}
+      <SheltersModal
+        isOpen={showSheltersModal}
+        onClose={() => setShowSheltersModal(false)}
+      />
+
+      {/* 9. Footer con Líneas Distritales IDPYBA y Legal */}
       <Footer />
     </div>
   )

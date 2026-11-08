@@ -127,6 +127,27 @@ export class AuthService {
     })
   }
 
+  /**
+   * Reenvía el correo de confirmación de registro.
+   */
+  public static async resendConfirmationEmail(email: string): Promise<AuthResponse<boolean>> {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email.trim().toLowerCase(),
+      })
+      if (error) {
+        return { data: false, error: this.mapAuthError(error) }
+      }
+      return { data: true, error: null }
+    } catch (err) {
+      return {
+        data: false,
+        error: err instanceof Error ? err.message : 'Error al reenviar el correo de confirmación.',
+      }
+    }
+  }
+
   private static mapAuthError(error: AuthError): string {
     switch (error.message) {
       case 'Invalid login credentials':
@@ -135,8 +156,10 @@ export class AuthService {
         return 'Ya existe una cuenta registrada con este correo.'
       case 'Password should be at least 6 characters':
         return 'La contraseña debe tener al menos 6 caracteres.'
+      case 'Email not confirmed':
+        return 'Tu correo electrónico aún no ha sido confirmado. Por favor revisa tu bandeja de entrada o spam.'
       default:
-        return error.message || 'Error de autenticación.'
+        return error.message || 'Error al iniciar sesión.'
     }
   }
 }

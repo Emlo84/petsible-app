@@ -73,11 +73,11 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a className="hover:text-on-surface transition-colors" href="#">
-                  Red de los 4 Refugios Aliados
+                  Red de Refugios Aliados
                 </a>
               </li>
               <li>
-                <a className="hover:text-on-surface transition-colors" href="#seccion-beneficios">
+                <a className="hover:text-on-surface transition-colors" href="#catalogo-preview">
                   Jornadas de Visita en Localidades
                 </a>
               </li>

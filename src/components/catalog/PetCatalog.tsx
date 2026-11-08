@@ -156,7 +156,7 @@ export const PetCatalog: React.FC<PetCatalogProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-on-surface">
-                Filtros Activos: {userProfile.fullName}
+                Filtros Activos{userProfile.fullName?.trim() ? `: ${userProfile.fullName}` : ''}
               </h3>
               <p className="text-xs text-on-surface-variant">
                 Vivienda:{' '}
